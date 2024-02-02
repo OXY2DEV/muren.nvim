@@ -27,6 +27,30 @@ M.default = {
   patterns_height = 10,
   options_width = 20,
   preview_height = 12,
+	-- ui borders 
+	borders = {
+		preview = "rounded",
+
+		patterns = "rounded",
+		replacements = "rounded",
+		options = "rounded",
+	},
+	-- Winblend
+	winblend = {
+		preview = 40,
+
+		patterns = 40,
+		replacements = 40,
+		options = 40,
+	},
+	-- Titles 
+	titles = {
+		preview = " Preview ",
+
+		patterns = " Patterns ",
+		replacements = " Replacements ",
+		options = " Options ",
+	},
   -- ui position
   anchor = 'center',
   vertical_offset = 0,
