@@ -489,34 +489,64 @@ M.open = function(opts)
 	vim.api.nvim_win_set_option(wins.replacements, "winblend", options.values.winblend.replacements)
 	vim.api.nvim_win_set_option(wins.options, "winblend", options.values.winblend.options)
 
+	-- Setting keymaps
   local keys = options.values.keys
   for _, buf in ipairs({bufs.patterns, bufs.replacements, bufs.options}) do
-	 	if type(keys.close) == "table" then
-    	vim.keymap.set('n', keys.close[1], M.close, {buffer = buf})
-    	vim.keymap.set('n', keys.close[2], M.close, {buffer = buf})
- 		else
- 	   vim.keymap.set('n', keys.close, M.close, {buffer = buf})
- 		end
+		local bufKeys = { "close", "toggle_options_focus", "do_undo" };
+		local actions = {
+			close = M.close,
+			toggle_options_focus = toggle_options_focus,
+			do_undo = do_undo,
+			do_redo = do_redo,
+			scroll_preview_up = scroll_preview_up,
+			scroll_preview_down = scroll_preview_down
+		};
 
-    vim.keymap.set('n', keys.toggle_options_focus, toggle_options_focus, {buffer = buf})
-    vim.keymap.set('n', keys.do_undo, do_undo, {buffer = buf})
-    vim.keymap.set('n', keys.do_redo, do_redo, {buffer = buf})
-    vim.keymap.set('n', keys.scroll_preview_up, scroll_preview_up, {buffer = buf})
-    vim.keymap.set('n', keys.scroll_preview_down, scroll_preview_down, {buffer = buf})
-    vim.api.nvim_create_autocmd('WinClosed', {
+		for _, name in ipairs(bufKeys) do
+			local key = keys[name];
+			local act = actions[name];
+
+			if type(key) ~= "table" then
+				vim.keymap.set("n", key, act, { buffer = buf });
+			else
+				for _, one in ipairs(key) do
+					vim.keymap.set("n", one, act, { buffer = buf });
+				end
+			end
+		end
+
+
+		vim.api.nvim_create_autocmd('WinClosed', {
       callback = function() M.close() end,
       buffer = buf,
     })
   end
   for _, buf in ipairs({bufs.patterns, bufs.replacements}) do
-    vim.keymap.set('n', keys.do_replace, do_replace, {buffer = buf})
-    vim.keymap.set('n', keys.toggle_side, toggle_side, {buffer = buf})
+		local otherKeys = { "do_replace", "toggle_side" }
+		local otherActs = {
+			do_replace = do_replace,
+			toggle_side = toggle_side
+		}
+		
+		for _, name in ipairs(otherKeys) do
+			local key = keys[name];
+			local act = otherActs[name];
+
+			if type(key) ~= "table" then
+				vim.keymap.set("n", key, act, { buffer = buf });
+			else
+				for _, one in ipairs(key) do
+					vim.keymap.set("n", one, act, { buffer = buf });
+				end
+			end
+		end
+
     vim.api.nvim_create_autocmd({'TextChanged', 'TextChangedI'}, {
       callback = update_preview,
       buffer = buf,
     })
   end
-  vim.keymap.set('n', keys.toggle_option_under_cursor, toggle_option_under_cursor, {buffer = bufs.options})
+  --vim.keymap.set('n', keys.toggle_option_under_cursor, toggle_option_under_cursor, {buffer = bufs.options})
   vim.api.nvim_create_autocmd('CursorMoved', {
     callback = function() align_cursor(wins.patterns) end,
     buffer = bufs.patterns,
